@@ -1,0 +1,31 @@
+---
+
+- name: "Update OS"
+  hosts: appli
+  roles:
+    - role: "update"
+
+- name: "Installation Node.js"
+  hosts: appli
+  roles:
+    - role: "nodejs"
+
+- name: "Montage disque de stockage"
+  hosts: appli
+  roles:
+    - role: "storage"
+
+- name: "WikiJS db configuration"
+  hosts: appli
+  gather_facts: no
+  tags: [ "mariadb", "mysql" ]
+  roles:
+    - role: "appli/mariadbconf"
+  tasks:
+    - debug: var=ansible_python_interpreter
+
+- name: "WikiJS installation"
+  hosts: appli
+  tags: [ "wikijs" ]
+  roles:
+    - role: "appli/wikijs"

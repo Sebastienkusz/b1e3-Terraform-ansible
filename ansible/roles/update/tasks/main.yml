@@ -1,0 +1,43 @@
+---
+
+- name: "Update repositories"
+  become: true
+  apt:
+    update_cache: true
+
+- name: "Add new users"
+  become: true
+  user:
+    name: "{{item.name}}"
+    shell: /bin/bash
+    password: "{{item.password}}"
+  with_items:
+    - "{{users}}"
+
+- name: "Add users to the sudoers"
+  become: true
+  copy:
+    dest: "/etc/sudoers.d/{{item.name}}"
+    content: "{{item.name}} ALL=(ALL) NOPASSWD:ALL"
+  with_items:
+    - "{{users}}"
+  
+- name: "Deploy SSH Key"
+  become: true
+  authorized_key: 
+    user: "{{item.sshkey}}"
+    key: "{{ lookup('file', '../ssh_keys/{{item.sshkey}}.pub') }}"
+    state: present
+  with_items:
+    - "{{users}}"
+
+- name: "Disable Password Authentication"
+  become: true
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: "PasswordAuthentication no"
+    state: present
+    backup: true
+  notify:
+    - restart ssh

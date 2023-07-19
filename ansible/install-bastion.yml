@@ -1,0 +1,6 @@
+---
+
+- name: "Update OS"
+  hosts: bastion
+  roles:
+    - role: "update"

@@ -1,0 +1,24 @@
+---
+
+- name: "Add Samba"
+  become: true
+  apt:
+    name: samba
+    state: present
+  notify:
+  - restart samba
+
+# Mount storage disk
+- name: "Mount storage disk"
+  shell: |
+    sudo mkdir /mnt/{{storage_account_name}}
+    if [ ! -d "/etc/smbcredentials" ]; then
+    sudo mkdir /etc/smbcredentials
+    fi
+    if [ ! -f "/etc/smbcredentials/{{share_name}}.cred" ]; then
+    sudo bash -c 'echo "username={{share_name}}" >> /etc/smbcredentials/{{share_name}}.cred'
+    sudo bash -c 'echo "password={{storage_account_key}}" >> /etc/smbcredentials/{{share_name}}.cred'
+    fi
+    sudo chmod 600 /etc/smbcredentials/{{share_name}}.cred
+    sudo bash -c 'echo "//{{share_name}}.file.core.windows.net/{{storage_account_name}} /mnt/{{storage_account_name}} cifs nofail,credentials=/etc/smbcredentials/{{share_name}}.cred,dir_mode=0777,file_mode=0777,serverino,nosharesock,actimeo=30" >> /etc/fstab'
+    sudo mount -t cifs //{{share_name}}.file.core.windows.net/{{storage_account_name}} /mnt/{{storage_account_name}} -o credentials=/etc/smbcredentials/{{share_name}}.cred,dir_mode=0777,file_mode=0777,serverino,nosharesock,actimeo=30

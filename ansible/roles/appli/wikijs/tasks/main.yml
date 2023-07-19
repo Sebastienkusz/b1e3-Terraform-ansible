@@ -1,0 +1,80 @@
+---
+
+#1. Création du repertoire pour l'installation des fichiers WikiJS
+- name: "wikijs directory"
+  file:
+    path: "{{wikijs_directory}}"
+    owner: "{{wikijs_user}}"
+    group: "{{wikijs_user}}"
+    state: directory
+
+#2. Télécharge le fichier source archive Wikijs
+- name: "wikijs download"
+  get_url:
+    url: "{{wikijs_archive_url}}"
+    dest: "{{wikijs_tar_directory}}"
+
+#3. Décompresse le fichier source archive Wikijs tar xzf wiki-js.tar.gz -C ./wiki
+- name: "uncompress wiki archive"
+  become: true
+  unarchive:
+    src: "{{wikijs_tar_directory}}{{wikijs_archive_name}}"
+    dest: "{{wikijs_directory}}"
+    remote_src: true
+
+#4. Configuration de Wikijs
+- name: "Copy config.yml"
+  become: true
+  copy:
+    src: "{{wikijs_directory}}/config.sample.yml"
+    dest: "{{wikijs_directory}}/config.yml"
+    remote_src: true   
+
+- name: "Replace db type"
+  ansible.builtin.replace:
+    path: "{{wikijs_directory}}/config.yml"
+    regexp: '{{item.From}}'
+    replace: '{{item.To}}'
+  with_items:
+    - { From: 'type: postgres', To: 'type : mariadb'}
+    - { From: 'host: localhost', To: 'host: {{wikijs_host}}'}
+    - { From: 'port: 5432', To: 'port: 3306'}
+    - { From: 'user: wikijs', To: 'user: {{wikijs_db_user}}@{{wikijs_db_host}}'}
+    - { From: 'pass: wikijsrocks', To: 'pass: {{wikijs_db_password}}'}
+    - { From: 'db: wiki', To: 'db: {{wikijs_db_name}}'}
+    - { From: 'domain: wiki.yourdomain.com', To: 'domain: {{wikijs_domain}}'}
+    - { From: '# min: 2', To: 'min: 2'}
+    - { From: '# max: 10', To: 'max: 10'}
+    - { From: 'ha: false', To: 'ha: true'}
+    - { From: 'dataPath: ./data', To: 'dataPath: {{wikijs_data}}'}
+
+- name: "wikijs smb directory"
+  file:
+    path: "{{wikijs_storage}}"
+    owner: "{{wikijs_user}}"
+    group: "{{wikijs_user}}"
+    state: directory
+
+- name: "Save config.yml in smb storage"
+  become: true
+  copy:
+    src: "{{wikijs_directory}}/config.yml"
+    dest: "{{wikijs_storage}}/config.yml"
+    remote_src: true 
+
+#5. Exécuter wikijs en tant que service
+- name: "Create wiki service"
+  become: true
+  copy:
+    dest: "/etc/systemd/system/{{wikijs_service}}.service"
+    content: "{{wikijs_service_content}}"
+
+- name: "Force systemd to reread configs"
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: "Start and Enable service wikijs "
+  ansible.builtin.systemd:
+    name: "{{wikijs_service}}"
+    state: started
+    enabled: true

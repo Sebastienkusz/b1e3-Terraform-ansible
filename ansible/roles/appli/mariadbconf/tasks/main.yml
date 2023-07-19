@@ -1,0 +1,24 @@
+---
+
+- name: "Install pip3"
+  become: true # needed if the other tasks are not played as root
+  apt:
+    name: python3-pip
+    state: present 
+
+- name: "Make sure Mariadb client is present"
+  become: true # needed if the other tasks are not played as root
+  pip:
+    name: pymysql
+    state: present   
+
+- name: "wikijs user and privileges"
+  community.mysql.mysql_user:
+    name: "{{wikijs_db_user}}"
+    host: "%"
+    password: "{{wikijs_db_password}}"
+    priv: "{{wikijs_db_name}}.*:ALL,GRANT"
+    login_user: "{{wikijs_admin_azuredb}}"
+    login_host: "{{wikijs_host}}"
+    login_password: "{{wikijs_admin_password}}"
+    state: present

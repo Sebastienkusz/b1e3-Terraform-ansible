@@ -1,0 +1,3 @@
+%{ for users_value_name, users_value_sshkey, in users ~}
+  - { name: "${users_value_name}", password: "${random_password.users_vms.result}", sshkey: "${users_value_sshkey}" } 
+%{ endfor ~}
