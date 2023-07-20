@@ -95,7 +95,7 @@ resource "azurerm_application_gateway" "main" {
     rule_type          = "PathBasedRouting"
     http_listener_name = local.listener_name
     url_path_map_name  = "Challenge"
-    priority           = 2
+    priority           = 1
   }
 
   url_path_map {
@@ -115,7 +115,7 @@ resource "azurerm_application_gateway" "main" {
     rule_type                   = "Basic"
     http_listener_name          = local.listener_name_https
     redirect_configuration_name = local.redirect_configuration_name
-    priority                    = 1
+    priority                    = 2
     # backend_address_pool_name   = local.backend_address_pool_name
     # backend_http_settings_name  = local.http_setting_name
   }

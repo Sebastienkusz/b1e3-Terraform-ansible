@@ -37,70 +37,27 @@ EOT
 resource "local_file" "appli_commun_main_yml" {
   filename        = "${path.module}/ansible/roles/appli/commun/defaults/main.yml"
   file_permission = "0644"
-  content         = <<-EOT
----
-
-# DNS Wiki JS
-wikijs_domain: "${azurerm_public_ip.Public_IP_Appli.fqdn}"
-
-# Wikijs host
-wikijs_host: "${azurerm_mariadb_server.serverdb.fqdn}"
-
-# Base de données
-wikijs_db_name: "${local.database_name}"
-wikijs_db_host: "${local.resource_group_name}-${local.server_name}"
-
-# Admin Base de données
-wikijs_admin_user: "${azurerm_mariadb_server.serverdb.administrator_login}"
-wikijs_admin_azuredb: "{{wikijs_admin_user}}@${local.resource_group_name}-${local.server_name}"
-wikijs_admin_password: "${azurerm_mariadb_server.serverdb.administrator_login_password}"
-
-# User Base de données
-wikijs_db_user: "${local.mariadb_user}"
-wikijs_db_password: "${local.mariadb_user_password}"
-
-# Wikijs Data
-wikijs_user: "${local.admin}"
-
-# nom du dossier wikijs
-wikijs_name: "${local.appli_name}"
-
-# Dossiers d'installation
-wikijs_tar_directory: "/tmp/"
-wikijs_directory: "/var/www/{{wikijs_name}}/"
-wikijs_storage: "/mnt/${azurerm_storage_share.share.name}/${azurerm_storage_share_directory.smb.name}/{{wikijs_name}}/"
-wikijs_data: "{{wikijs_storage}}data"
-
-# Url des sources Mediawiki
-wikijs_archive_name: "${local.appli_archive_name}"
-wikijs_archive_url: "${local.appli_archive_url}"
-
-# Service
-wikijs_service: "${local.appli_service}"
-wikijs_service_content: |
-  [Unit]
-  Description=Wiki.js
-  After=network.target
-
-  [Service]
-  Type=simple
-  ExecStart=/usr/bin/node server
-  Restart=always
-  # Consider creating a dedicated user for Wiki.js here:
-  User=nobody
-  Environment=NODE_ENV=production
-  WorkingDirectory={{wikijs_directory}}
-
-  [Install]
-  WantedBy=multi-user.target
-
-# Users
-users:
-...
-templatefile("${path.module}/users.tftpl", { local.users })
-
-EOT
-
+  content = templatefile("${path.module}/users.tftpl",
+    {
+      tpl_users             = local.users
+      tpl_random_password   = random_password.users_vms.result
+      tpl_app_fqdn          = azurerm_public_ip.Public_IP_Appli.fqdn
+      tpl_db_fqdn           = azurerm_mariadb_server.serverdb.fqdn
+      tpl_db_name           = local.database_name
+      tpl_rg                = local.resource_group_name
+      tpl_server            = local.server_name
+      tpl_admin_dbuser      = azurerm_mariadb_server.serverdb.administrator_login
+      tpl_admin_dbpassword  = azurerm_mariadb_server.serverdb.administrator_login_password
+      tpl_user_dbuser       = local.mariadb_user
+      tpl_user_dbpassword   = local.mariadb_user_password
+      tpl_admin_vm          = local.admin
+      tpl_app_name          = local.appli_name
+      tpl_storage_share     = azurerm_storage_share.share.name
+      tpl_storage_directory = azurerm_storage_share_directory.smb.name
+      tpl_archive_name      = local.appli_archive_name
+      tpl_archive_url       = local.appli_archive_url
+      tpl_app_service       = local.appli_service
+  })
   depends_on = [
     azurerm_public_ip.Public_IP_Appli
   ]

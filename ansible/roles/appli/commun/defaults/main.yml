@@ -1,0 +1,61 @@
+---
+
+# Users
+users:
+  - { name: "johann", sshkey: "johann" } 
+  - { name: "sebastien", sshkey: "sebastien" } 
+tmp_password: "Io9AgT%HaVBW8tsI"
+
+# DNS Wiki JS
+wikijs_domain: "b1e3-gr2-wiki-js.westeurope.cloudapp.azure.com"
+
+# Wikijs host
+wikijs_host: "b1e3-gr2-mariaserverdb.mariadb.database.azure.com"
+
+# Base de données
+wikijs_db_name: "b1e3gr2mariadb"
+wikijs_db_host: "b1e3-gr2-mariaserverdb"
+
+# Admin Base de données
+wikijs_admin_user: "azureuser"
+wikijs_admin_azuredb: "{{wikijs_admin_user}}@b1e3-gr2-mariaserverdb"
+wikijs_admin_password: "MZ043gZngVa_ftvx"
+
+# User Base de données
+wikijs_db_user: "wikiuser"
+wikijs_db_password: "!k$cc84otnZtzt0F"
+
+# Wikijs Data
+wikijs_user: "azureuser"
+
+# nom du dossier wikijs
+wikijs_name: "wiki-js"
+
+# Dossiers d'installation
+wikijs_tar_directory: "/tmp/"
+wikijs_directory: "/var/www/{{wikijs_name}}/"
+wikijs_storage: "/mnt/b1e3-gr2-wikishare/b1e3-gr2-wikispace/{{wikijs_name}}/"
+wikijs_data: "{{wikijs_storage}}data"
+
+# Url des sources Mediawiki
+wikijs_archive_name: "wiki-js.tar.gz"
+wikijs_archive_url: "https://github.com/Requarks/wiki/releases/latest/download/wiki-js.tar.gz"
+
+# Service
+wikijs_service: "wiki"
+wikijs_service_content: |
+  [Unit]
+  Description=Wiki.js
+  After=network.target
+
+  [Service]
+  Type=simple
+  ExecStart=/usr/bin/node server
+  Restart=always
+  # Consider creating a dedicated user for Wiki.js here:
+  User=nobody
+  Environment=NODE_ENV=production
+  WorkingDirectory={{wikijs_directory}}
+
+  [Install]
+  WantedBy=multi-user.target

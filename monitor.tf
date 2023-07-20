@@ -178,14 +178,14 @@ resource "azurerm_monitor_action_group" "notification_group" {
   resource_group_name = local.resource_group_name
   short_name          = "notifgrp"
 
-  #   dynamic "email_receiver" {
-  #   for_each = local.users
+  dynamic "email_receiver" {
+    for_each = local.users
 
-  #   content {
-  #   name          = "email-${email_reciever.value.name}"
-  #   email_address = email_reciever.value.email
-  # }
-  #   }
+    content {
+      name          = "email-${email_receiver.value.name}"
+      email_address = email_receiver.value.email
+    }
+  }
   # email_receiver {
   #   name          = "emaildom"
   #   email_address = "dtauzin.ext@simplon.co"

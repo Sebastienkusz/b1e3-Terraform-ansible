@@ -1,16 +1,7 @@
-# provider "azurerm" {
-#   features {
-#     key_vault {
-#       purge_soft_deleted_secrets_on_destroy = true
-#       recover_soft_deleted_secrets          = true
-#     }
-#   }
-# }
-
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_key_vault" "coffre_fort" {
-  name                        = "b1e3gr2vault-2"
+  name                        = "b1e3gr2vault"
   location                    = local.location
   resource_group_name         = local.resource_group_name
   enabled_for_disk_encryption = true

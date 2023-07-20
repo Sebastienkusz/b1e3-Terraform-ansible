@@ -1,0 +1,16 @@
+# Local .terraform directories
+**/.terraform*
+*.terraform*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# invetaire d'ansible
+inventaire.ini
+
+# others files
+*.save
+
+# Admin ssh key
+azureuser

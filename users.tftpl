@@ -1,3 +1,62 @@
-%{ for users_value_name, users_value_sshkey, in users ~}
-  - { name: "${users_value_name}", password: "${random_password.users_vms.result}", sshkey: "${users_value_sshkey}" } 
+---
+
+# Users
+users:
+%{ for users_value in tpl_users ~}
+  - { name: "${users_value.name}", sshkey: "${users_value.sshkey}" } 
 %{ endfor ~}
+tmp_password: "${tpl_random_password}"
+
+# DNS Wiki JS
+wikijs_domain: "${tpl_app_fqdn}"
+
+# Wikijs host
+wikijs_host: "${tpl_db_fqdn}"
+
+# Base de données
+wikijs_db_name: "${tpl_db_name}"
+wikijs_db_host: "${tpl_rg}-${tpl_server}"
+
+# Admin Base de données
+wikijs_admin_user: "${tpl_admin_dbuser}"
+wikijs_admin_azuredb: "{{wikijs_admin_user}}@${tpl_rg}-${tpl_server}"
+wikijs_admin_password: "${tpl_admin_dbpassword}"
+
+# User Base de données
+wikijs_db_user: "${tpl_user_dbuser}"
+wikijs_db_password: "${tpl_user_dbpassword}"
+
+# Wikijs Data
+wikijs_user: "${tpl_admin_vm}"
+
+# nom du dossier wikijs
+wikijs_name: "${tpl_app_name}"
+
+# Dossiers d'installation
+wikijs_tar_directory: "/tmp/"
+wikijs_directory: "/var/www/{{wikijs_name}}/"
+wikijs_storage: "/mnt/${tpl_storage_share}/${tpl_storage_directory}/{{wikijs_name}}/"
+wikijs_data: "{{wikijs_storage}}data"
+
+# Url des sources Mediawiki
+wikijs_archive_name: "${tpl_archive_name}"
+wikijs_archive_url: "${tpl_archive_url}"
+
+# Service
+wikijs_service: "${tpl_app_service}"
+wikijs_service_content: |
+  [Unit]
+  Description=Wiki.js
+  After=network.target
+
+  [Service]
+  Type=simple
+  ExecStart=/usr/bin/node server
+  Restart=always
+  # Consider creating a dedicated user for Wiki.js here:
+  User=nobody
+  Environment=NODE_ENV=production
+  WorkingDirectory={{wikijs_directory}}
+
+  [Install]
+  WantedBy=multi-user.target

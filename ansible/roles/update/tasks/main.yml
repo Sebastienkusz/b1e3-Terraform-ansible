@@ -10,7 +10,7 @@
   user:
     name: "{{item.name}}"
     shell: /bin/bash
-    password: "{{item.password}}"
+    password: "{{tmp_password}}"
   with_items:
     - "{{users}}"
 
